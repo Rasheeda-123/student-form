@@ -1,0 +1,73 @@
+pipeline {
+    agent any
+
+    environment {
+        // Define variables for Docker
+        DOCKER_IMAGE = "student-registration-app" // Change to your Docker image name
+        DOCKER_COMPOSE_FILE = "docker-compose.yml"
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                // Checkout the code from your source control (GitHub, GitLab, etc.)
+                git url: 'https://github.com/your-repo/student-registration-form.git', branch: 'main'
+            }
+        }
+
+        stage('Build Docker Images') {
+            steps {
+                script {
+                    // Build the Docker image
+                    sh 'docker-compose build'
+                }
+            }
+        }
+
+        stage('Run Containers') {
+            steps {
+                script {
+                    // Start the containers using Docker Compose
+                    sh 'docker-compose up -d'
+                }
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                script {
+                    // Run tests (You can modify this based on your test setup)
+                    sh 'docker-compose exec -T <your-service-name> npm test'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    // Deploy the app (You can modify this based on your deployment strategy)
+                    sh 'docker-compose up -d --build'
+                }
+            }
+        }
+
+        stage('Cleanup') {
+            steps {
+                script {
+                    // Cleanup Docker containers
+                    sh 'docker-compose down'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Cleanup even if the build fails
+            script {
+                sh 'docker-compose down'
+            }
+        }
+    }
+}
+
